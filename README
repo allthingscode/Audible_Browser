@@ -3,17 +3,23 @@
 - GIT Apology -
 This is my first experience with git, so forgive me if I'm doing things all wrong.
 
+
+
 - Purpose -
-Create a PHP API that can gather audio book data from an audible users account.  
+Provide a PHP API that can gather audio book data from an audible users account.
 
 I have no intention, at this time, of doing anything more than read-only data-mining operations.
 
-- Completed -
-* Sign-in
-* Retrieve a list of all audio books in "My Library"
 
-- TODO -
-* Complete the AudioBook class so that it can be initialized with ALL data available from the product view page.
-* Retrieve a list of all audio books in "My Next Listen"
-* Retrieve a list of all audio books in "Wish List"
+
+- Install -
+All of the files are meant to live in a directory call "Audible".  
+Create this directory somewhere in the php include path, and then add all the files.
+
+
+
+- Dependancies -
+PHP
+Curl
+
 
