@@ -4,7 +4,7 @@
 /**
  * @package Audible
  */
-class Audible_Product
+abstract class Audible_Product
 {
 	/**
 	 * All properties for this object are stored in this array.

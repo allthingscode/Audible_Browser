@@ -4,7 +4,7 @@
  * @package Audible
  * @author Matthew Hayes <Matthew.Hayes@AllThingsCode.com>
  */
-class Audible_Browser_WebPage
+abstract class Audible_Browser_WebPage
 {
 	/**
 	 * All properties for this object are stored in this array.
