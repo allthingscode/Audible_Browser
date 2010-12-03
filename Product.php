@@ -6,38 +6,38 @@
  */
 abstract class Audible_Product
 {
-	/**
-	 * All properties for this object are stored in this array.
-	 * Default values are not populated,
-	 *   so if properties are accessed before they are set,
-	 *   a php notice is generated.  This behavior helps identify coding errors.
-	 * @var array
-	 */
-	protected $_properties = array();
-	// ------------------------------------------------------------------------
+    /**
+     * All properties for this object are stored in this array.
+     * Default values are not populated,
+     *   so if properties are accessed before they are set,
+     *   a php notice is generated.  This behavior helps identify coding errors.
+     * @var array
+     */
+    protected $_properties = array();
+    // ------------------------------------------------------------------------
 
 
-	/**
-	 * This helps prevent invalid property assignments.
-	 * @param string
-	 * @param mixed
-	 */
-	public function __set( $propertyName, $propertyValue )
-	{
-		throw new Exception( 'Invalid property assignment: ' . $propertyName . ' => ' . $propertyValue );
-	}
-	/**
-	 * This helps catch invalid property retreival
-	 * @param string
-	 */
-	public function __get( $propertyName )
-	{
-		throw new Exception( 'Invalid property retreival: ' . $propertyName );
+    /**
+     * This helps prevent invalid property assignments.
+     * @param string
+     * @param mixed
+     */
+    public function __set( $propertyName, $propertyValue )
+    {
+        throw new Exception( 'Invalid property assignment: ' . $propertyName . ' => ' . $propertyValue );
+    }
+    /**
+     * This helps catch invalid property retreival
+     * @param string
+     */
+    public function __get( $propertyName )
+    {
+        throw new Exception( 'Invalid property retreival: ' . $propertyName );
     }
 
 
 
-	// ----- Setters/Getters --------------------------------------------------
+    // ----- Setters/Getters --------------------------------------------------
 
     /**
      * @param string
@@ -51,39 +51,39 @@ abstract class Audible_Product
 
 
 
-	/**
-	 * @param string
-	 */
-	protected function _setAsin( $newValue )
-	{
-		$this->_properties['Asin'] = trim( $newValue );
-	}
-	/**
-	 * @return string
-	 */
-	public function getAsin()
-	{
-		return $this->_properties['Asin'];
+    /**
+     * @param string
+     */
+    protected function _setAsin( $newValue )
+    {
+        $this->_properties['Asin'] = trim( $newValue );
     }
-	// ------------------------------------------------------------------------
+    /**
+     * @return string
+     */
+    public function getAsin()
+    {
+        return $this->_properties['Asin'];
+    }
+    // ------------------------------------------------------------------------
 
 
 
     // ----- Public Methods ---------------------------------------------------
 
-	// ------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
 
 
-	// ----- Private Methods --------------------------------------------------
+    // ----- Private Methods --------------------------------------------------
 
-	/**
-	 * This resets all local properties.
-	 */
-	protected function _reset()
-	{
-		$this->_properties = array();
-	}
-	// ------------------------------------------------------------------------
+    /**
+     * This resets all local properties.
+     */
+    protected function _reset()
+    {
+        $this->_properties = array();
+    }
+    // ------------------------------------------------------------------------
 }
 
