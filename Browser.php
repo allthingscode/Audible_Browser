@@ -171,7 +171,7 @@ final class Audible_Browser
     /**
      * @param string
      * @param string
-     * @return array of Audible_Product_AudioBook objects
+     * @return array of Audible_Browser_WebPage_MyLibrary_AudioBook objects
      */
     public function getMyLibrary( $programTypeFilter = 'all', $timeFilter = 'all' )
     {
@@ -218,15 +218,15 @@ final class Audible_Browser
 
     /**
      * @param string
-     * @return Audible_Product
+     * @return Audible_Browser_WebPage_ProductDetail_AudioBook
      */
-    public function getProductDetails( $asin )
+    public function getAudioBookDetails( $asin )
     {
-        $productDetailPage = new Audible_Browser_WebPages_ProductDetail( $this );
+        $productDetailPage = new Audible_Browser_WebPage_ProductDetail( $this );
         $productDetailPage->loadFromAsin( $asin );
-        $product = $productDetailPage->getProduct();
+        $audioBook = $productDetailPage->getAudioBook();
 
-        return $product;
+        return $audioBook;
     }
     // ------------------------------------------------------------------------
 

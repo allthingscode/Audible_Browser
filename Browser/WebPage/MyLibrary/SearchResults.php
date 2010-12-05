@@ -1,6 +1,6 @@
 <?php
 require_once 'Audible/Browser/WebPage.php';
-require_once 'Audible/Product/AudioBook.php';
+require_once 'Audible/Browser/WebPage/MyLibrary/AudioBook.php';
 
 /**
  * @package Audible
@@ -144,7 +144,7 @@ final class Audible_Browser_WebPage_MyLibrary_SearchResults extends Audible_Brow
      */
     private function _appendAudioBook( Audible_Product_AudioBook $audioBook )
     {
-        $this->_properties['AudioBooks'][ $audioBook->getAsin() ] = $audioBook;
+        $this->_properties['AudioBooks'][] = $audioBook;
     }
     /**
      * @return bool
@@ -276,8 +276,8 @@ final class Audible_Browser_WebPage_MyLibrary_SearchResults extends Audible_Brow
         // Load each audio book
         foreach( $pregMatches[1] as $audioBookHtml ) {
 
-            $audioBook = new Audible_Product_AudioBook();
-            $audioBook->loadFromMyLibrarySearchResultsHtml( $audioBookHtml );
+            $audioBook = new Audible_Browser_WebPage_MyLibrary_AudioBook();
+            $audioBook->load( $audioBookHtml );
 
             $this->_appendAudioBook( $audioBook );
 

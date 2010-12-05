@@ -1,12 +1,12 @@
 <?php
 require_once 'Audible/Browser/WebPage.php';
-require_once 'Audible/Product/AudioBook.php';
+require_once 'Audible/Browser/WebPage/ProductDetail/AudioBook.php';
 
 /**
  * @package Audible
  * @author Matthew Hayes <Matthew.Hayes@AllThingsCode.com>
  */
-final class Audible_Browser_WebPage_ProductDetail  extends Audible_Browser_WebPage
+final class Audible_Browser_WebPage_ProductDetail extends Audible_Browser_WebPage
 {
     // All properties are stored in the parent class.
     // ------------------------------------------------------------------------
@@ -61,18 +61,18 @@ final class Audible_Browser_WebPage_ProductDetail  extends Audible_Browser_WebPa
 
 
     /**
-     * @param int
+     * @param Audible_Browser_WebPage_ProductDetail_AudioBook
      */
-    private function _setProduct( $newValue )
+    private function _setAudioBook( Audible_Browser_WebPage_ProductDetail_AudioBook $newValue )
     {
-        $this->_properties['Product'] = $newValue;
+        $this->_properties['AudioBook'] = $newValue;
     }
     /**
-     * @return int
+     * @return Audible_Browser_WebPage_ProductDetail_AudioBook
      */
-    public function getProduct()
+    public function getAudioBook()
     {
-        return $this->_properties['Product'];
+        return $this->_properties['AudioBook'];
     }
 
     // ------------------------------------------------------------------------
@@ -88,10 +88,10 @@ final class Audible_Browser_WebPage_ProductDetail  extends Audible_Browser_WebPa
     {
         $productDetailHtml = $this->_getProductDetailHtmlFromAsin( $asin );
 
-        $audioBook = new Audible_Product_AudioBook();
-        $audioBook->loadFromProductDetailHtml( $productDetailHtml );
+        $audioBook = new Audible_Browser_WebPage_ProductDetail_AudioBook();
+        $audioBook->load( $productDetailHtml );
 
-        $this->_setProduct( $audioBook );
+        $this->_setAudioBook( $audioBook );
     }
     // ------------------------------------------------------------------------
 
@@ -104,11 +104,12 @@ final class Audible_Browser_WebPage_ProductDetail  extends Audible_Browser_WebPa
      */
     private function _getProductDetailHtmlFromAsin( $asin )
     {
-        $curlSessionHandle = $this->_getCurlSessionHandle();
+        $browser     = $this->_getBrowser();
+        $curlSession = $browser->getCurlSession();
 
         $postHeaders = array(
             'Referer: '    . $this->getReferringUrl(),
-            'User-Agent: ' . $this->_getUserAgent()
+            'User-Agent: ' . $browser->getUserAgent()
             );
         $curlOptions = array(
             CURLOPT_HTTPHEADER     => $postHeaders,
@@ -117,15 +118,15 @@ final class Audible_Browser_WebPage_ProductDetail  extends Audible_Browser_WebPa
             CURLOPT_POST           => false,
             CURLOPT_HTTPGET        => true,
             CURLOPT_HEADER         => false,
-            CURLOPT_URL            => $this->getProductDetailUrl() . '?asin=' . $asin,
+            CURLOPT_URL            => $this->getProductDetailUrl() . '?asin=' . $asin
             );
-        if( false === curl_setopt_array( $curlSessionHandle, $curlOptions ) ) {
+        if( false === curl_setopt_array( $curlSession->getHandle(), $curlOptions ) ) {
             throw new Exception( 'Unable to set curl options' );
         }
 
-        $productDetailHtml = curl_exec( $curlSessionHandle );
+        $productDetailHtml = curl_exec( $curlSession->getHandle() );
         if ( false === $productDetailHtml ) {
-            throw new Exception( 'Curl error while retrieving product detail page html:  ' . curl_error( $curlSessionHandle ) );
+            throw new Exception( 'Curl error while retrieving product detail page html:  ' . curl_error( $curlSession->getHandle() ) );
         }
 
         // Make sure we are actually on a valid product detail page
