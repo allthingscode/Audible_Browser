@@ -150,7 +150,6 @@ class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Product_Au
 
         // Parse the version
         $pregMatches = array();
-
         $matchCount = preg_match( '/<li class="adbl-prod-version">([^<]+)<\/li>/', $productDetailHtml, $pregMatches );
         if ( 1 !== $matchCount ) {
             throw new Exception( 'Unable to locate the product version from the product view html.' );
