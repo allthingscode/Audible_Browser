@@ -4,7 +4,7 @@ require_once 'Audible/Product.php';
 /**
  * @package Audible
  */
-class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Product_AudioBook
+final class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Product_AudioBook
 {
     // All properties are stored in the parent Audible_Product_AudioBook class.
     // ------------------------------------------------------------------------
@@ -101,6 +101,22 @@ class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Product_Au
     {
         return $this->_properties['CustomerRatingsCount'];
     }
+    
+    
+    /**
+     * @param string
+     */
+    private function _setCopyright( $newValue )
+    {
+        $this->_properties['Copyright'] = trim( $newValue );
+    }
+    /**
+     * @return string
+     */
+    public function getCopyright()
+    {
+        return $this->_properties['Copyright'];
+    }
     // ------------------------------------------------------------------------
 
 
@@ -115,15 +131,8 @@ class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Product_Au
         // Make sure we are starting with a blank slate.
         $this->_reset();
 
-
-
-        //echo htmlspecialchars( $productDetailHtml );
-        //return;
-
-
-
         // Getting rid of new-line chars makes parsing easier
-        $productDetailHtml = str_replace( array( "\n", "\r" ), '', $productDetailHtml );
+        $productDetailHtml = str_replace( array( "\n", "\r" ), '  ', $productDetailHtml );
 
         // See if this product is in My Library
         // @TODO Determine if we are logged in so we can set this property definitively
@@ -139,7 +148,6 @@ class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Product_Au
         }
         $this->_setAsin( $pregMatches[1] );
 
-
         // Parse the title
         $pregMatches = array();
         $matchCount = preg_match( '/<li class="adbl-prod-title adbl-label">([^<]+)<\/li>/', $productDetailHtml, $pregMatches );
@@ -149,16 +157,17 @@ class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Product_Au
         $this->_setTitle( $pregMatches[1] );
 
         // Parse the version
+        // NOTE:  Some audiobooks really don't have a version
         $pregMatches = array();
         $matchCount = preg_match( '/<li class="adbl-prod-version">([^<]+)<\/li>/', $productDetailHtml, $pregMatches );
         if ( 1 !== $matchCount ) {
-            throw new Exception( 'Unable to locate the product version from the product view html.' );
+            $pregMatches[1] = '';
         }
         $this->_setVersion( $pregMatches[1] );
 
         // Parse the author/s
         $pregMatches = array();
-        $matchCount = preg_match_all( '/<a class="adbl-link" href="\/search\?searchAuthor=[^"]+">[^<]*<span>([^<]+)<\/span>[^<]*<\/a>/', $productDetailHtml, $pregMatches );
+        $matchCount = preg_match_all( '/<span class="adbl-prod-author">\s+<a class="adbl-link" href="\/search\?searchAuthor=[^"]+">[^<]*<span>([^<]+)<\/span>[^<]*<\/a>\s+<\/span>/', $productDetailHtml, $pregMatches );
         if ( $matchCount < 1 ) {
             throw new Exception( 'Unable to locate any product author/s from the product view html.' );
         }
@@ -235,6 +244,21 @@ class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Product_Au
         $this->_setAverageCustomerRating( $pregMatches[1] );
         $this->_setCustomerRatingsCount(  $pregMatches[2] );
 
+        // Parse the publishers summary
+        $pregMatches = array();
+        $matchCount = preg_match( '/<h2>Publisher\'s Summary<\/h2>\s+<div class="adbl-content">(.*?)<p><a/', $productDetailHtml, $pregMatches );
+        if ( 1 !== $matchCount ) {
+            throw new Exception( 'Unable to locate the publishers summary from the product view html.' );
+        }
+        $this->_setDescription( $pregMatches[1] );
+        
+        // Parse the copyright
+        $pregMatches = array();
+        $matchCount = preg_match( '/<p>&#169;([^<]+)<\/p>/', $productDetailHtml, $pregMatches );
+        if ( 1 !== $matchCount ) {
+            throw new Exception( 'Unable to locate the copyright from the product view html.' );
+        }
+        $this->_setCopyright( $pregMatches[1] );
     }
 
 

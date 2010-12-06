@@ -224,13 +224,12 @@ final class Audible_Browser_WebPage_MyLibrary_AudioBook extends Audible_Product_
         $this->_setTitle( $pregMatches[1] );
 
         // Parse the narrated-by
+        // NOTE:  Some audio books really don't have a narrator
         $pregMatches = array();
         $matchCount = preg_match( '/<div class="adbl-overlay-narrated-by">Narrated by ([^<]+)<\/div>/', $searchResultsRowHtml, $pregMatches );
-        if ( 1 !== $matchCount ) {
-            $pregMatches[1] = '';
-            //throw new Exception( 'Unable to locate the narrated-by value from the search results row.' );
+        if ( 1 == $matchCount ) {
+            $this->_appendNarrator( $pregMatches[1] );
         }
-        $this->_appendNarrator( $pregMatches[1] );
 
         // Parse the average customer rating
         $pregMatches = array();
@@ -311,7 +310,7 @@ final class Audible_Browser_WebPage_MyLibrary_AudioBook extends Audible_Product_
             throw new Exception( 'Unable to locate the item delivery type from the search results row.' );
         }
         $this->_setItemDeliveryType( $pregMatches[1] );
-        
+
         // Parse the audible formats
         $pregMatches = array();
         $matchCount = preg_match_all( '/<option [^>]+>([^<]+)<\/option>/', $searchResultsRowHtml, $pregMatches );
@@ -321,7 +320,7 @@ final class Audible_Browser_WebPage_MyLibrary_AudioBook extends Audible_Product_
         foreach ( $pregMatches[1] as $audioFormat ) {
             $this->_appendAudioFormat( $audioFormat );
         }
-        
+
         // Parse the downloaded flag
         $pregMatches = array();
         $matchCount = preg_match( '/<td><span class="adbl-check-off[^"]*">([^<]*)<\/span><\/td>/', $searchResultsRowHtml, $pregMatches );
