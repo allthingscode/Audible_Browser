@@ -1,6 +1,7 @@
 <?php
 require_once 'Audible/Browser/WebPage.php';
 require_once 'Audible/Browser/WebPage/ProductDetail/AudioBook.php';
+require_once 'Audible/Exception/ProductUnavailable.php';
 
 /**
  * @package Audible
@@ -130,11 +131,25 @@ final class Audible_Browser_WebPage_ProductDetail extends Audible_Browser_WebPag
         }
 
         // Make sure we are actually on a valid product detail page
+        if ( true === $this->_isProductNotAvailablePage( $productDetailHtml ) ) {
+            throw new Exception_ProductUnavailable();
+        }
         if ( false === strpos( $productDetailHtml, '<div class="adbl-prod-detail-cont">' ) ) {
             throw new Exception( 'Unrecognized audible product detail page.' );
         }
 
         return $productDetailHtml;
+    }
+
+    /**
+     * @param string
+     */
+    private function _isProductNotAvailablePage( $productDetailHtml )
+    {
+        if ( false === strpos( $productDetailHtml, '<h1>Product Not Available</h1>' ) ) {
+            return false;
+        }
+        return true;
     }
     // ------------------------------------------------------------------------
 }

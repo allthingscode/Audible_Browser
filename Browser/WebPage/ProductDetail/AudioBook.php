@@ -101,8 +101,8 @@ final class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Prod
     {
         return $this->_properties['CustomerRatingsCount'];
     }
-    
-    
+
+
     /**
      * @param string
      */
@@ -126,13 +126,13 @@ final class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Prod
     /**
      * @param string
      */
-    public function load( $productDetailHtml )
+    public function load( $productDetailHtmlRaw )
     {
         // Make sure we are starting with a blank slate.
         $this->_reset();
 
         // Getting rid of new-line chars makes parsing easier
-        $productDetailHtml = str_replace( array( "\n", "\r" ), '  ', $productDetailHtml );
+        $productDetailHtml = str_replace( array( "\n", "\r" ), '  ', $productDetailHtmlRaw );
 
         // See if this product is in My Library
         // @TODO Determine if we are logged in so we can set this property definitively
@@ -167,7 +167,7 @@ final class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Prod
 
         // Parse the author/s
         $pregMatches = array();
-        $matchCount = preg_match_all( '/<span class="adbl-prod-author">\s+<a class="adbl-link" href="\/search\?searchAuthor=[^"]+">[^<]*<span>([^<]+)<\/span>[^<]*<\/a>\s+<\/span>/', $productDetailHtml, $pregMatches );
+        $matchCount = preg_match_all( '/<a class="adbl-link" href="\/search\?searchAuthor=[^"]+">[^<]*<span>([^<]+)<\/span>[^<]*<\/a>/', $productDetailHtml, $pregMatches );
         if ( $matchCount < 1 ) {
             throw new Exception( 'Unable to locate any product author/s from the product view html.' );
         }
@@ -178,11 +178,10 @@ final class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Prod
         // Parse the Narrated-By/s
         $pregMatches = array();
         $matchCount = preg_match_all( '/<a class="adbl-link" href="\/search\?searchNarrator=[^"]+">[^<]*<span>([^<]+)<\/span>[^<]*<\/a>/', $productDetailHtml, $pregMatches );
-        if ( $matchCount < 1 ) {
-            throw new Exception( 'Unable to locate any product narrator/s from the product view html.' );
-        }
-        foreach( $pregMatches[1] as $narrator ) {
-            $this->_appendNarrator( $narrator );
+        if ( $matchCount > 0 ) {
+            foreach( $pregMatches[1] as $narrator ) {
+                $this->_appendNarrator( $narrator );
+            }
         }
 
         // Parse the regular price
@@ -236,29 +235,41 @@ final class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Prod
         }
 
         // Parse the average customer rating
-        $pregMatches = array();
-        $matchCount = preg_match( '/<div class="adbl-rating-text">([0-9.]+) based on ([0-9]+) ratings <\/div>/', $productDetailHtml, $pregMatches );
-        if ( 1 !== $matchCount ) {
-            throw new Exception( 'Unable to locate the average customer rating from the product view html.' );
+        if ( false === strpos( $productDetailHtml, '<div class="adbl-rating-text">Not rated yet</div>' ) ) {
+            $pregMatches = array();
+            $matchCount = preg_match( '/<div class="adbl-rating-text">([0-9.]+) based on ([0-9]+) rating[s]? <\/div>/', $productDetailHtml, $pregMatches );
+            if ( 1 !== $matchCount ) {
+                throw new Exception( 'Unable to locate the average customer rating from the product view html.' );
+            }
+            $this->_setAverageCustomerRating( $pregMatches[1] );
+            $this->_setCustomerRatingsCount(  $pregMatches[2] );
+        } else {
+            $this->_setCustomerRatingsCount( 0 );
         }
-        $this->_setAverageCustomerRating( $pregMatches[1] );
-        $this->_setCustomerRatingsCount(  $pregMatches[2] );
 
+
+        /*
         // Parse the publishers summary
-        $pregMatches = array();
-        $matchCount = preg_match( '/<h2>Publisher\'s Summary<\/h2>\s+<div class="adbl-content">(.*?)<p><a/', $productDetailHtml, $pregMatches );
-        if ( 1 !== $matchCount ) {
-            throw new Exception( 'Unable to locate the publishers summary from the product view html.' );
+        try {
+            $publishersSummary = $this->_parsePublishersSummary( $productDetailHtmlRaw );
+            $this->_setDescription( $publishersSummary );
+        } catch ( Exception $exception ) {
+            // Sometimes, the product view simple does not include the Publisher's summary.
+            // It's not because the book doesn't have one.
+            // Every random request for the product detail html just does not include the Publisher's Summary section.
+            // I assume this behavior is no different from a browser, but probably happens less often
+            //   because the client isn't hammering the web server like these scripts do.
         }
-        $this->_setDescription( $pregMatches[1] );
-        
+
+
         // Parse the copyright
         $pregMatches = array();
-        $matchCount = preg_match( '/<p>&#169;([^<]+)<\/p>/', $productDetailHtml, $pregMatches );
+        $matchCount = preg_match( '/<p>(&#169;|Â©|©)([^<]+)<\/p>/', $productDetailHtml, $pregMatches );
         if ( 1 !== $matchCount ) {
             throw new Exception( 'Unable to locate the copyright from the product view html.' );
         }
-        $this->_setCopyright( $pregMatches[1] );
+        $this->_setCopyright( $pregMatches[2] );
+        */
     }
 
 
@@ -292,6 +303,55 @@ final class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Prod
 
 
     // ----- Private Methods --------------------------------------------------
+
+    /**
+     * Yes, this is not very efficient.
+     * Since the publisher's summary can include so much free-form html, it's difficult to parse it.
+     *
+     * @param string
+     * @return string
+     */
+    private function _parsePublishersSummary( $rawHtml )
+    {
+        $lines = explode( "\n", $rawHtml );
+
+        $publishersSummaryLines  = array();
+        $insidePublishersSummary = false;
+        for ( $lineNumber = 500; $lineNumber < count( $lines ); $lineNumber++ ) {
+
+            // Clean up the html line
+            $htmlLine = trim( str_replace( "\r", '', $lines[ $lineNumber ] ) );
+
+            // If we are inside the publishers summary
+            //   and we hit an end div, then we're all done.
+            if ( true === $insidePublishersSummary ) {
+                if ( '</div>' === $htmlLine ) {
+                    break;
+                }
+            }
+
+            // Append this line to our publishers summary if we are inside it
+            if ( true === $insidePublishersSummary ) {
+                $publishersSummaryLines[] = $lines[ $lineNumber ];
+            }
+
+            // See if we are inside the publishers summary
+            if ( '<div class="adbl-content">' === $htmlLine ) {
+                $insidePublishersSummary = true;
+            }
+        }
+
+        // Make sure we found something
+        if ( count( $publishersSummaryLines ) < 1 ) {
+            echo htmlspecialchars($rawHtml);
+            throw new Exception( 'Unable to find the publishers summary from the product view html' );
+        }
+
+        $publishersSummaryLinesHtml = trim( implode( "\n", $publishersSummaryLines ) );
+
+        return $publishersSummaryLinesHtml;
+    }
+
 
     // ------------------------------------------------------------------------
 }
