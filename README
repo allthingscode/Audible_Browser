@@ -13,13 +13,13 @@ I have no intention, at this time, of doing anything more than read-only data-mi
 
 
 - Install -
-All of the files are meant to live in a directory call "Audible".  
+All of the files are meant to live in a directory call "Audible".
 Create this directory somewhere in the php include path, and then add all the files.
 
 
 
 - Dependancies -
-PHP
+PHP 5.0+
 Curl
 
 
