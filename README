@@ -1,10 +1,5 @@
 = PHP Audible API =
 
-- GIT Apology -
-This is my first experience with git, so forgive me if I'm doing things all wrong.
-
-
-
 - Purpose -
 Provide a PHP API that can gather audio book data from an audible users account.
 
