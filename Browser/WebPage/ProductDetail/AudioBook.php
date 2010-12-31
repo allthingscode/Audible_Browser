@@ -186,7 +186,7 @@ final class Audible_Browser_WebPage_ProductDetail_AudioBook extends Audible_Prod
 
         // Parse the regular price
         $pregMatches = array();
-        $matchCount = preg_match( '/<li class="adbl-reg-price-cont"><div class="adbl-price-item"><span class="adbl-label">Regular Price:<\/span><span class="adbl-price-content"><span class="adbl-reg-price">\$([^<]+)<\/span><\/span><\/div>/', $productDetailHtml, $pregMatches );
+        $matchCount = preg_match( '/<li class="adbl-reg-price-cont"><div class="adbl-price-item"><span class="adbl-label">Regular Price:<\/span><span class="adbl-price-content"><span class="adbl-reg-price[^"]*">\$([^<]+)<\/span><\/span><\/div>/', $productDetailHtml, $pregMatches );
         if ( 1 !== $matchCount ) {
             throw new Exception( 'Unable to locate the product regular price from the product view html.' );
         }
