@@ -87,7 +87,7 @@ final class Audible_Browser_WebPage_ProductDetail extends Audible_Browser_WebPag
      */
     public function loadFromAsin( $asin )
     {
-        $productDetailHtml = $this->_getProductDetailHtmlFromAsin( $asin );
+        $productDetailHtml = $this->_getProductDetailHtmlFromAsinWithRetries( $asin );
 
         $audioBook = new Audible_Browser_WebPage_ProductDetail_AudioBook();
         $audioBook->load( $productDetailHtml );
@@ -99,6 +99,47 @@ final class Audible_Browser_WebPage_ProductDetail extends Audible_Browser_WebPag
 
 
     // ----- Private Methods --------------------------------------------------
+
+    /**
+     * @param string
+     */
+    private function _getProductDetailHtmlFromAsinWithRetries( $asin, $maxTryCount = 3 )
+    {
+        $currentTryCount = 0;
+
+        while ( $currentTryCount < $maxTryCount ) {
+
+            $exceptionOccured = false;
+            try {
+                $currentTryCount++;
+                $productDetailHtml = $this->_getProductDetailHtmlFromAsin( $asin );
+
+            } catch ( Exception_ProductUnavailable $exception ) {
+
+                throw $exception;
+
+            } catch ( Exception $exception ) {
+
+                // Swallow the exception.  We'll loop back and try again.
+                $exceptionOccured = true;
+            }
+
+            // If we successfully loaded the details, then no need to keep trying
+            if ( false === $exceptionOccured ) {
+                break;
+            }
+        }
+
+        // If we tried the max number of times and never loaded the html, 
+        //   then throw the last exception.
+        if ( $currentTryCount === $maxTryCount ) {
+            if ( true === $exceptionOccured ) {
+                throw $exception;
+            }
+        }
+
+        return $productDetailHtml;
+    }
 
     /**
      * @param string
