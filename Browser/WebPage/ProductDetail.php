@@ -101,6 +101,10 @@ final class Audible_Browser_WebPage_ProductDetail extends Audible_Browser_WebPag
     // ----- Private Methods --------------------------------------------------
 
     /**
+     * This is needed to increase stability.
+     * For some reason, random product detail loads fail.
+     * I assume this behavior would be no different in a browser.
+     * Perhaps it happens more with this script because it hammers the audible web server.
      * @param string
      */
     private function _getProductDetailHtmlFromAsinWithRetries( $asin, $maxTryCount = 3 )
@@ -130,7 +134,7 @@ final class Audible_Browser_WebPage_ProductDetail extends Audible_Browser_WebPag
             }
         }
 
-        // If we tried the max number of times and never loaded the html, 
+        // If we tried the max number of times and never loaded the html,
         //   then throw the last exception.
         if ( $currentTryCount === $maxTryCount ) {
             if ( true === $exceptionOccured ) {
