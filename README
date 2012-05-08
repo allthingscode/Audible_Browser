@@ -6,11 +6,9 @@ Provide a PHP API that can gather audio book data from an audible users account.
 I have no intention, at this time, of doing anything more than read-only data-mining operations.
 
 
-
 - Install -
 All of the files are meant to live in a directory call "Audible".
 Create this directory somewhere in the php include path, and then add all the files.
-
 
 
 - Dependancies -
